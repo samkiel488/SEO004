@@ -1,0 +1,112 @@
+<!DOCTYPE html><html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO004 - VCF Generator</title>
+    <link rel="stylesheet" href="index.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">VCF Generator</div>
+        <div class="header-right">SEO004 - Photography</div>
+    </header><!-- Main Content -->
+<div class="panel">
+    <h1>Networking 🚀</h1>
+    
+    <!-- Public Contact Form -->
+    <div id="userForm">
+        <h2>Add Your Contact</h2>
+        <div class="form-group">
+            <label for="name"> Name:</label>
+            <input type="text" id="name" placeholder="Preferred display name" required>
+        </div>
+        <div class="form-group">
+            <label for="phone">Phone Number:</label>
+            <input type="tel" id="phone" placeholder="US number only.. Jk  😹 " required>
+        </div>
+        <button onclick="submitContact()">Submit Contact</button>
+        <div id="status" class="status"></div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer>
+    Made with 🤍 by SAMKIEL <br /> All left reserved &copy 2025 <br />
+    <a href="https://www.facebook.com/samkiel06"><i class="fab fa-facebook"></i></a>
+    <a href="https://www.linkedin.com/in/devsamkiel" title="LinkedIn">
+    <i class="fab fa-linkedin"></i>
+</a>
+    <a href="https://wa.me/+2348087357158" title="Whatsapp"><i class="fab fa-whatsapp"></i></a>
+    <a href="https://github.com/samkiel488"><i class="fab fa-github"></i></a>
+    <a href="tel:+2348087357158" title="Call Me"><i class="fas fa-phone"></i></a>
+    <a href="https://x.com/ѕαмкiєℓ.∆єв"><i class="fab fa-twitter"></i></a>
+</footer>
+
+<script>
+    // Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBnT7oEfsN4Ob4YN1gRl8fiG56T6_Oqapg",
+        authDomain: "vcfgen-21465.firebaseapp.com",
+        projectId: "vcfgen-21465",
+        storageBucket: "vcfgen-21465.appspot.com",
+        messagingSenderId: "1070700772436",
+        appId: "1:1070700772436:web:d9fb4d6ab6f94da6a381c1",
+        measurementId: "G-7C96R9NGRQ"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // User submits contact
+    async function submitContact() {
+        const name = document.getElementById("name").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const status = document.getElementById("status");
+
+        const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+
+        if (!name || !phone) {
+            status.textContent = "Name & Phone are required!";
+            status.className = "status error";
+            return;
+        }
+
+        if (!phoneRegex.test(phone)) {
+            status.textContent = "Invalid phone number format!";
+            status.className = "status error";
+            return;
+        }
+
+        try {
+            await db.collection("contacts").add({ 
+                name, 
+                phone, 
+                timestamp: firebase.firestore.FieldValue.serverTimestamp() 
+            });
+
+            // Show success pop-up
+            Swal.fire({
+                title: 'Success!',
+                text: 'Congratulations! Your phone number has been added to the VCF file. You will be able to download it from the WhatsApp group.',
+                icon: 'success',
+                confirmButtonText: 'Okay'
+            });
+
+            document.getElementById("name").value = "";
+            document.getElementById("phone").value = "";
+
+        } catch (error) {
+            status.textContent = "❌ Error: " + error.message;
+            status.className = "status error";
+        }
+    }
+</script>
+
+</body>
+</html>

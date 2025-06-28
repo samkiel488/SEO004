@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - VCF Contact Collector</title>
+    <link rel="stylesheet" href="admin.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <!-- Login Panel -->
+    <div id="loginPanel" class="panel">
+        <h1>Admin Login</h1>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" placeholder="Enter admin email">
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" placeholder="Enter password">
+        </div>
+        <button onclick="login()">Login</button>
+        <div id="loginStatus" class="status hidden"></div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="panel hidden">
+        <div class="header">
+            <h1>VCF Contact Collector - Admin Dashboard</h1>
+            <button class="logout" onclick="logout()">Logout</button>
+        </div>
+        
+        <h2>Contact Management</h2>
+        <div id="contactsTable">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Date Submitted</th>
+                    </tr>
+                </thead>
+                <tbody id="contactsList">
+                    <!-- Contacts will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="action-buttons" style="margin-top: 25px;">
+            <button class="generate" onclick="generateVCF()">Generate VCF File</button>
+        </div>
+        <div id="adminStatus" class="status hidden"></div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnT7oEfsN4Ob4YN1gRl8fiG56T6_Oqapg",
+            authDomain: "vcfgen-21465.firebaseapp.com",
+            projectId: "vcfgen-21465",
+            storageBucket: "vcfgen-21465.appspot.com",
+            messagingSenderId: "1070700772436",
+            appId: "1:1070700772436:web:d9fb4d6ab6f94da6a381c1",
+            measurementId: "G-7C96R9NGRQ"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const ADMIN_EMAIL = "samkiel488@gmail.com";
+        const ADMIN_PASSWORD = "1234567";
+        let isAuthenticated = false;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem('adminAuthenticated')) {
+                isAuthenticated = true;
+                showAdminPanel();
+                loadContacts();
+            }
+        });
+
+        function login() {
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const status = document.getElementById("loginStatus");
+            
+            if (!email || !password) {
+                showMessage(status, "Email and password are required", "error");
+                return;
+            }
+
+            if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+                isAuthenticated = true;
+                sessionStorage.setItem('adminAuthenticated', 'true');
+                showAdminPanel();
+                loadContacts();
+                showMessage(status, "Login successful!", "success");
+            } else {
+                showMessage(status, "Invalid email or password", "error");
+            }
+        }
+
+        function logout() {
+            isAuthenticated = false;
+            sessionStorage.removeItem('adminAuthenticated');
+            showLoginPanel();
+        }
+
+        function loadContacts() {
+            const contactsList = document.getElementById("contactsList");
+            contactsList.innerHTML = "<tr><td colspan='3'>Loading contacts...</td></tr>";
+            
+            db.collection("contacts")
+                .orderBy("timestamp", "desc")
+                .get()
+                .then(snapshot => {
+                    if (snapshot.empty) {
+                        contactsList.innerHTML = "<tr><td colspan='3'>No contacts found</td></tr>";
+                        return;
+                    }
+
+                    contactsList.innerHTML = "";
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const date = data.timestamp?.toDate();
+                        
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${data.name || "N/A"}</td>
+                            <td>${data.phone || "N/A"}</td>
+                            <td>${date ? date.toLocaleString() : "N/A"}</td>
+                        `;
+                        contactsList.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    contactsList.innerHTML = `<tr><td colspan='3'>Error loading contacts: ${error.message}</td></tr>`;
+                });
+        }
+
+        function generateVCF() {
+            const status = document.getElementById("adminStatus");
+            showMessage(status, "Preparing VCF file...", "info");
+            
+            db.collection("contacts").get()
+                .then(snapshot => {
+                    if (snapshot.empty) {
+                        showMessage(status, "No contacts to export", "error");
+                        return;
+                    }
+
+                    let vcfContent = "";
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        vcfContent += `BEGIN:VCARD\nVERSION:3.0\nFN:${data.name || "Unknown"}\nTEL:${data.phone || ""}\nEND:VCARD\n\n`;
+                    });
+
+                    const blob = new Blob([vcfContent], { type: "text/vcard" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `contacts_${new Date().toISOString().split('T')[0]}.vcf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    showMessage(status, "VCF file generated successfully", "success");
+                })
+                .catch(error => {
+                    showMessage(status, "Error generating VCF: " + error.message, "error");
+                });
+        }
+
+        function showLoginPanel() {
+            document.getElementById("loginPanel").classList.remove("hidden");
+            document.getElementById("adminPanel").classList.add("hidden");
+        }
+
+        function showAdminPanel() {
+            document.getElementById("loginPanel").classList.add("hidden");
+            document.getElementById("adminPanel").classList.remove("hidden");
+        }
+
+        function showMessage(element, message, type) {
+            element.textContent = message;
+            element.className = "status " + type;
+            element.classList.remove("hidden");
+            
+            if (type === "success") {
+                setTimeout(() => {
+                    element.classList.add("hidden");
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>
