@@ -69,7 +69,7 @@
         const phone = document.getElementById("phone").value.trim();
         const status = document.getElementById("status");
 
-        const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+        const phoneRegex = /^\+?[1-9]\d{0,3}[-.\s]??\d{1,4}??[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/;
 
         if (!name || !phone) {
             status.textContent = "Name & Phone are required!";
