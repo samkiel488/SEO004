@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,99 +15,114 @@
     <header class="header">
         <div class="header-left">VCF Generator</div>
         <div class="header-right">SEO004 - Photography</div>
-    </header><!-- Main Content -->
-<div class="panel">
-    <h1>Networking 🚀</h1>
-    
-    <!-- Public Contact Form -->
-    <div id="userForm">
-        <h2>Add Your Contact</h2>
-        <div class="form-group">
-            <label for="name"> Name:</label>
-            <input type="text" id="name" placeholder="Preferred display name" required>
+    </header>
+
+    <!-- Main Content -->
+    <div class="panel">
+        <h1>Networking 🚀</h1>
+        
+        <!-- Public Contact Form -->
+        <div id="userForm">
+            <h2>Add Your Contact</h2>
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" placeholder="Preferred display name" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone Number:</label>
+                <input type="tel" id="phone" placeholder="Enter your phone number" required>
+            </div>
+            <button onclick="submitContact()">Submit Contact</button>
+            <div id="status" class="status"></div>
         </div>
-        <div class="form-group">
-            <label for="phone">Phone Number:</label>
-            <input type="tel" id="phone" placeholder="US number only.. Jk  😹 " required>
-        </div>
-        <button onclick="submitContact()">Submit Contact</button>
-        <div id="status" class="status"></div>
     </div>
-</div>
 
-<!-- Footer -->
-<footer>
-    Made with 🤍 by SAMKIEL <br /> All left reserved &copy 2025 <br />
-    <a href="https://www.facebook.com/samkiel06"><i class="fab fa-facebook"></i></a>
-    <a href="https://www.linkedin.com/in/devsamkiel" title="LinkedIn">
-    <i class="fab fa-linkedin"></i>
-</a>
-    <a href="https://wa.me/+2348087357158" title="Whatsapp"><i class="fab fa-whatsapp"></i></a>
-    <a href="https://github.com/samkiel488"><i class="fab fa-github"></i></a>
-    <a href="tel:+2348087357158" title="Call Me"><i class="fas fa-phone"></i></a>
-    <a href="https://x.com/ѕαмкiєℓ.∆єв"><i class="fab fa-twitter"></i></a>
-</footer>
+    <!-- Footer -->
+    <footer>
+        Made with 🤍 by SAMKIEL <br /> All rights reserved &copy; 2025 <br />
+        <a href="https://www.facebook.com/samkiel06"><i class="fab fa-facebook"></i></a>
+        <a href="https://www.linkedin.com/in/devsamkiel" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+        <a href="https://wa.me/+2348087357158" title="Whatsapp"><i class="fab fa-whatsapp"></i></a>
+        <a href="https://github.com/samkiel488"><i class="fab fa-github"></i></a>
+        <a href="tel:+2348087357158" title="Call Me"><i class="fas fa-phone"></i></a>
+        <a href="https://x.com/ѕαмкiєℓ.∆єв"><i class="fab fa-twitter"></i></a>
+    </footer>
 
-<script>
-    // Firebase Configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyBnT7oEfsN4Ob4YN1gRl8fiG56T6_Oqapg",
-        authDomain: "vcfgen-21465.firebaseapp.com",
-        projectId: "vcfgen-21465",
-        storageBucket: "vcfgen-21465.appspot.com",
-        messagingSenderId: "1070700772436",
-        appId: "1:1070700772436:web:d9fb4d6ab6f94da6a381c1",
-        measurementId: "G-7C96R9NGRQ"
-    };
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnT7oEfsN4Ob4YN1gRl8fiG56T6_Oqapg",
+            authDomain: "vcfgen-21465.firebaseapp.com",
+            projectId: "vcfgen-21465",
+            storageBucket: "vcfgen-21465.appspot.com",
+            messagingSenderId: "1070700772436",
+            appId: "1:1070700772436:web:d9fb4d6ab6f94da6a381c1",
+            measurementId: "G-7C96R9NGRQ"
+        };
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-    // User submits contact
-    async function submitContact() {
-        const name = document.getElementById("name").value.trim();
-        const phone = document.getElementById("phone").value.trim();
-        const status = document.getElementById("status");
-
-        const phoneRegex = /^\+?[1-9]\d{0,3}[-.\s]??\d{1,4}??[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/;
-
-        if (!name || !phone) {
-            status.textContent = "Name & Phone are required!";
-            status.className = "status error";
-            return;
+        // Helper function for ordinal suffix
+        function getOrdinalSuffix(number) {
+            const j = number % 10,
+                  k = number % 100;
+            if (j === 1 && k !== 11) return "st";
+            if (j === 2 && k !== 12) return "nd";
+            if (j === 3 && k !== 13) return "rd";
+            return "th";
         }
 
-        if (!phoneRegex.test(phone)) {
-            status.textContent = "Invalid phone number format!";
-            status.className = "status error";
-            return;
+        // User submits contact
+        async function submitContact() {
+            const name = document.getElementById("name").value.trim();
+            const phone = document.getElementById("phone").value.trim();
+            const status = document.getElementById("status");
+
+            const phoneRegex = /^\+?[1-9]\d{0,3}[-.\s]??\d{1,4}??[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/;
+
+            if (!name || !phone) {
+                status.textContent = "Name & Phone are required!";
+                status.className = "status error";
+                return;
+            }
+
+            if (!phoneRegex.test(phone)) {
+                status.textContent = "Invalid phone number format!";
+                status.className = "status error";
+                return;
+            }
+
+            try {
+                // Get the count of documents in the "contacts" collection
+                const snapshot = await db.collection("contacts").get();
+                const submissionCount = snapshot.size + 1; // Current submission count + 1 for the new user
+
+                // Add the new contact
+                await db.collection("contacts").add({
+                    name,
+                    phone,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Show a success message with the user's submission number
+                Swal.fire({
+                    title: 'Success!',
+                    text: `Congratulations! Your phone number has been added as the ${submissionCount}${getOrdinalSuffix(submissionCount)} contact. You will be able to download it from the WhatsApp group.`,
+                    icon: 'success',
+                    confirmButtonText: 'Okay'
+                });
+
+                // Reset the form fields
+                document.getElementById("name").value = "";
+                document.getElementById("phone").value = "";
+
+            } catch (error) {
+                status.textContent = "❌ Error: " + error.message;
+                status.className = "status error";
+            }
         }
-
-        try {
-            await db.collection("contacts").add({ 
-                name, 
-                phone, 
-                timestamp: firebase.firestore.FieldValue.serverTimestamp() 
-            });
-
-            // Show success pop-up
-            Swal.fire({
-                title: 'Success!',
-                text: 'Congratulations! Your phone number has been added to the VCF file. You will be able to download it from the WhatsApp group.',
-                icon: 'success',
-                confirmButtonText: 'Okay'
-            });
-
-            document.getElementById("name").value = "";
-            document.getElementById("phone").value = "";
-
-        } catch (error) {
-            status.textContent = "❌ Error: " + error.message;
-            status.className = "status error";
-        }
-    }
-</script>
-
+    </script>
 </body>
 </html>
