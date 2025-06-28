@@ -17,10 +17,10 @@
         <div class="header-right">SEO004 - Photography</div>
     </header>
 
-    <!-- Main Content -->
+    <!-- Live Counter -->
     <div class="panel">
         <h1>Networking 🚀</h1>
-        
+   
         <!-- Public Contact Form -->
         <div id="userForm">
             <h2>Add Your Contact</h2>
@@ -34,6 +34,8 @@
             </div>
             <button onclick="submitContact()">Submit Contact</button>
             <div id="status" class="status"></div>
+                 <h4 id="liveCounter">🎉 Loading submissions...</h4>
+
         </div>
     </div>
 
@@ -64,15 +66,18 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Helper function for ordinal suffix
-        function getOrdinalSuffix(number) {
-            const j = number % 10,
-                  k = number % 100;
-            if (j === 1 && k !== 11) return "st";
-            if (j === 2 && k !== 12) return "nd";
-            if (j === 3 && k !== 13) return "rd";
-            return "th";
+        // Enable Live Counter
+        function enableLiveCounter() {
+            const liveCounterElement = document.getElementById('liveCounter');
+            
+            db.collection("contacts").onSnapshot(snapshot => {
+                const submissionCount = snapshot.size; // Get the total number of submissions
+                liveCounterElement.textContent = `🎉 ${submissionCount} Contacts Submitted!`;
+            });
         }
+
+        // Call the live counter function
+        enableLiveCounter();
 
         // User submits contact
         async function submitContact() {
@@ -95,26 +100,26 @@
             }
 
             try {
-                // Get the count of documents in the "contacts" collection
-                const snapshot = await db.collection("contacts").get();
-                const submissionCount = snapshot.size + 1; // Current submission count + 1 for the new user
-
-                // Add the new contact
+                // Add contact to Firestore
                 await db.collection("contacts").add({
                     name,
                     phone,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                // Show a success message with the user's submission number
+                // Get the number of contacts submitted before this one
+                const snapshot = await db.collection("contacts").get();
+                const count = snapshot.size;
+
+                // Show a success pop-up with user-specific counter
                 Swal.fire({
                     title: 'Success!',
-                    text: `Congratulations! Your phone number has been added as the ${submissionCount}${getOrdinalSuffix(submissionCount)} contact. You will be able to download it from the WhatsApp group.`,
+                    text: `Congratulations! You are the ${count}th person to submit your contact. You will be able to download the VCF file from the WhatsApp group.`,
                     icon: 'success',
                     confirmButtonText: 'Okay'
                 });
 
-                // Reset the form fields
+                // Reset form fields
                 document.getElementById("name").value = "";
                 document.getElementById("phone").value = "";
 
